@@ -1,0 +1,15 @@
+Infinity Yield Features (For Audit)
+
+IFY is a powerful staking and yield farming token based on the Ethereum blockchain. IFY uses various profit-generating strategies for staked IFY tokens and liquidity providers. The smart contract utilizes the Weak Hand Tax, a methodology that protects the integrity of IFY’s value.
+
+The weak hand is an additional fee to uniswap transactions (trading IFY for ETH) ranging from 5-15%. Its purpose is to deter major price swings due to panic selling as well as deterring bots from quick trades. When one sells their IFY for ETH on uniswap, the weak hand tax is applied and distributed to two places; This brings us to the IFY staking mechanism. The person who traded their IFY for ETH receiving 5-15% less than they would with no tax. 
+
+When the weak hand tax is collected, 10% is sent to the IFY team and 90% is sent to the IFY staking pool (that will initially hold an upwards of 70% of the IFY total supply (split between the staking pool and yield farmers - yield farming has not yet been added but will in the future. People are able to stake their tokens in 4 different categories for high ROIs as follows:
+1 week - 5% ROI
+1 month - 25% ROI
+3 months - 100% ROI
+6 months - 245% ROI
+
+When one stakes, they will not be able to withdraw their IFY tokens and gains until after the time contract (Listed above) expires. Once they withdraw, they will be able to trade freely on uniswap or stake their tokens once again.
+
+The IFY presale will contain 20% of the total supply (50,000 tokens of 250,000 total tokens). 50% of raised funds will be used as liquidity on uniswap and the rest will be distributed for marketing, campaigns, future development of IFY, and the team. It will run from FEB 3 7pm UTC to FEB 10 7pm UTC. The first three days will be set at a price of 0.01ETH/token and the next three will be set at 0.0125ETH per token.
