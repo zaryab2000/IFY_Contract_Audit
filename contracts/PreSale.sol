@@ -253,12 +253,20 @@ contract PreSale is Owned {
         return true;
     }
     
+    // function getUnSoldTokens() onlyOwner external{
+    //     require(block.timestamp > endSale, "sale is not closed");
+    //     // check unsold tokens
+    //     uint256 tokensInContract = IERC20(tokenAddress).balanceOf(address(this));
+    //     require(tokensInContract > purchasedTokens, "no unsold tokens in contract");
+    //     uint256 unSoldTokens = tokensInContract.sub(purchasedTokens);
+    //     require(IERC20(tokenAddress).transfer(owner, unSoldTokens), "transfer of token failed");
+    // }
+
     function getUnSoldTokens() onlyOwner external{
         require(block.timestamp > endSale, "sale is not closed");
         // check unsold tokens
         uint256 tokensInContract = IERC20(tokenAddress).balanceOf(address(this));
-        require(tokensInContract > purchasedTokens, "no unsold tokens in contract");
-        uint256 unSoldTokens = tokensInContract.sub(purchasedTokens);
-        require(IERC20(tokenAddress).transfer(owner, unSoldTokens), "transfer of token failed");
+        require(tokensInContract > 0, "no unsold tokens in contract");
+        require(IERC20(tokenAddress).transfer(owner, tokensInContract), "transfer of token failed");
     }
 }

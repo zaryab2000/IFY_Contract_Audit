@@ -31,7 +31,7 @@ contract("PreSale Contract", accounts => {
   });
 
    it("Transferring IFY tokens to Presale Contract", async () => {
-    const preSaleTokenSupply = new BN(50000000000000000000000);
+    const preSaleTokenSupply = new BN(1500000000000000000000);
     await tokenInstance.transfer(preSaleInstance.address,preSaleTokenSupply);
     const balanceOfContract = await tokenInstance.balanceOf(preSaleInstance.address);
     console.log(balanceOfContract.toString())
@@ -139,16 +139,48 @@ contract("PreSale Contract", accounts => {
    * Check if tax is paid to OWNER and Staking Contract. - Yes tax is applicable
    * Investor mapping balance should be updated -done
   */
-  it("ClaimTokens function should work as expected", async () => {
+  it("ClaimTokens function should work as expected for User 1", async () => {
+      console.log("USER 1 Claim------------------------")
+      const userBalanceBefore = await tokenInstance.balanceOf(accounts[1]);
+      const stakeBalnceBefore = await tokenInstance.balanceOf(stakeInstance.address);
+      const ownerBalanceBefore = await tokenInstance.balanceOf(accounts[0]);
+      const preSaleBalanceBefore = await tokenInstance.balanceOf(preSaleInstance.address);
+
+      console.log(`UserBalanceBefore-${userBalanceBefore.toString()}`)
+      console.log(`OwnerBalanceBefore-${ownerBalanceBefore.toString()}`)
+      console.log(`StakeBalanceBefore-${stakeBalnceBefore.toString()}`)
+      console.log(`PreSaleBalanceBefore-${preSaleBalanceBefore.toString()}`)
+
+      //Calling the ClaimTokens function
+      await preSaleInstance.ClaimTokens({from:accounts[1]})
+      const userRemains = await preSaleInstance.investor(accounts[1]);
+
+      const userBalanceAfter = await tokenInstance.balanceOf(accounts[1]);
+      const stakeBalanceAfter = await tokenInstance.balanceOf(stakeInstance.address);
+      const ownerBalanceAfter = await tokenInstance.balanceOf(accounts[0]);
+      const preSaleBalanceAfter = await tokenInstance.balanceOf(preSaleInstance.address);
+
+      console.log(`UserBalanceAfter-${userBalanceAfter.toString()}`)
+      console.log(`OwnerBalanceAfter-${ownerBalanceAfter.toString()}`)
+      console.log(`StakeBalanceAfter-${stakeBalanceAfter.toString()}`)
+      console.log(`PresaleAfter-${preSaleBalanceAfter.toString()}`)
+
+      assert.isAbove(parseInt(preSaleBalanceBefore.toString()),parseInt(preSaleBalanceAfter.toString()),"Presale balance not deducted")
+      assert.equal(userRemains.toString(),"0","User still has claimable tokens");
+  });
+
+  it("ClaimTokens function should work as expected for User 2", async () => {
+           console.log("USER 2 Claim------------------------")
+
       const userBalanceBefore = await tokenInstance.balanceOf(accounts[2]);
       const stakeBalnceBefore = await tokenInstance.balanceOf(stakeInstance.address);
       const ownerBalanceBefore = await tokenInstance.balanceOf(accounts[0]);
       const preSaleBalanceBefore = await tokenInstance.balanceOf(preSaleInstance.address);
 
-      // console.log(`UserBalanceBefore-${userBalanceBefore.toString()}`)
-      // console.log(`OwnerBalanceBefore-${ownerBalanceBefore.toString()}`)
-      // console.log(`StakeBalanceBefore-${stakeBalnceBefore.toString()}`)
-      // console.log(`PreSaleBalanceBefore-${preSaleBalanceBefore.toString()}`)
+      console.log(`UserBalanceBefore-${userBalanceBefore.toString()}`)
+      console.log(`OwnerBalanceBefore-${ownerBalanceBefore.toString()}`)
+      console.log(`StakeBalanceBefore-${stakeBalnceBefore.toString()}`)
+      console.log(`PreSaleBalanceBefore-${preSaleBalanceBefore.toString()}`)
 
       //Calling the ClaimTokens function
       await preSaleInstance.ClaimTokens({from:accounts[2]})
@@ -159,10 +191,10 @@ contract("PreSale Contract", accounts => {
       const ownerBalanceAfter = await tokenInstance.balanceOf(accounts[0]);
       const preSaleBalanceAfter = await tokenInstance.balanceOf(preSaleInstance.address);
 
-      // console.log(`UserBalanceAfter-${userBalanceAfter.toString()}`)
-      // console.log(`OwnerBalanceAfter-${ownerBalanceAfter.toString()}`)
-      // console.log(`StakeBalanceAfter-${stakeBalanceAfter.toString()}`)
-      // console.log(`PresaleAfter-${preSaleBalanceAfter.toString()}`)
+      console.log(`UserBalanceAfter-${userBalanceAfter.toString()}`)
+      console.log(`OwnerBalanceAfter-${ownerBalanceAfter.toString()}`)
+      console.log(`StakeBalanceAfter-${stakeBalanceAfter.toString()}`)
+      console.log(`PresaleAfter-${preSaleBalanceAfter.toString()}`)
 
       assert.isAbove(parseInt(preSaleBalanceBefore.toString()),parseInt(preSaleBalanceAfter.toString()),"Presale balance not deducted")
       assert.equal(userRemains.toString(),"0","User still has claimable tokens");
