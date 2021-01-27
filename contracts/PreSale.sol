@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+ pragma solidity ^0.6.0;
 
 // SPDX-License-Identifier: UNLICENSED
 
@@ -201,13 +201,16 @@ interface IERC20 {
 contract PreSale is Owned {
     using SafeMath for uint256;
     
-    address tokenAddress;
-    uint256 public startSale = 1612378800; // 3 Feb 2021, 7pm GMT
-    uint256 endSale = 1612983600; // 10 Feb 2021, 7pm GMT
-    uint256 claimDate = 1612987200; // 10 Feb 2021, 8pm GMT
+    address public tokenAddress;
+    // uint256 public startSale = 1612378800; // 3 Feb 2021, 7pm GMT
+    // uint256 endSale = 1612983600; // 10 Feb 2021, 7pm GMT
+    // uint256 claimDate = 1612987200; // 10 Feb 2021, 8pm GMT
+    uint256 public startSale = now; // 3 Feb 2021, 7pm GMT
+    uint256 public endSale = startSale + 8 days; // 10 Feb 2021, 7pm GMT
+    uint256 public claimDate = startSale + 9 days; // 10 Feb 2021, 8pm GMT
     uint256 public purchasedTokens;
     
-    mapping(address => uint256) investor;
+    mapping(address => uint256) public investor;
 
     constructor(address _tokenAddress) public {
         tokenAddress = _tokenAddress;
@@ -217,10 +220,15 @@ contract PreSale is Owned {
         Invest();
     }
     
+    function getTime() public view returns(uint256){
+        return now;
+        
+    }
+    
     function Invest() public payable{
         require( now > startSale && now < endSale , "Sale is closed");
         uint256 tokens = getTokenAmount(msg.value);
-        investor[msg.sender] = tokens;
+        investor[msg.sender] += tokens;
         purchasedTokens = purchasedTokens + tokens;
         owner.transfer(msg.value);
     }
