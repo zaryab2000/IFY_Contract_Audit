@@ -157,6 +157,7 @@ library SafeMath {
     }
     
     function ceil(uint256 a, uint256 m) internal pure returns (uint256 r) {
+        require(m != 0, "SafeMath: to ceil number shall not be zero");
         return (a + m - 1) / m * m;
     }
 }
@@ -208,8 +209,7 @@ contract Owned {
         _;
     }
 
-    function transferOwnership(address payable _newOwner) external onlyOwner {
-        require(_newOwner != address(0),"Invalid address passed");
+    function transferOwnership(address payable _newOwner) public onlyOwner {
         owner = _newOwner;
         emit OwnershipTransferred(msg.sender, _newOwner);
     }
@@ -218,7 +218,7 @@ contract Owned {
 contract IFY_Stake is Owned {
     using SafeMath for uint256;
     
-    IERC20 public IFY;
+    IERC20 IFY;
     
     uint256 public  totalClaimedRewards;
     uint256 public  totalStaked;
@@ -231,7 +231,7 @@ contract IFY_Stake is Owned {
         uint256 stakingEndDate;
         uint256 rewardPercentage;
     }
-    
+
     mapping(address => Account) public stakers;
     
     struct StakingOpts{
@@ -239,7 +239,7 @@ contract IFY_Stake is Owned {
         uint256 stakingPercentage;
     }
     
-    StakingOpts[4] public stakingOptions;
+    StakingOpts[4] stakingOptions;
     
     event RewardClaimed(address claimer, uint256 reward);
     event UnStaked(address claimer, uint256 stakedTokens);
@@ -285,6 +285,9 @@ contract IFY_Stake is Owned {
         
         // no tax will be applied upon staking IFY
         totalStaked = totalStaked.add(_amount);
+
+        // transfer the tokens from caller to staking contract
+        IFY.transferFrom(msg.sender, address(this), _amount);
         
         // record it in contract's storage
         stakers[msg.sender].stakedAmount = stakers[msg.sender].stakedAmount.add(_amount); // add to the stake or fresh stake
@@ -293,9 +296,6 @@ contract IFY_Stake is Owned {
         stakers[msg.sender].rewardPercentage = stakingOptions[optionNumber.sub(1)].stakingPercentage;
         
         emit Staked(msg.sender, _amount, optionNumber);
-        
-        // transfer the tokens from caller to staking contract
-        require(IFY.transferFrom(msg.sender, address(this), _amount));
     }
     
     function Exit() external{
@@ -322,10 +322,10 @@ contract IFY_Stake is Owned {
         // add the reward to total claimed rewards
         stakers[msg.sender].rewardsClaimed = stakers[msg.sender].rewardsClaimed.add(reward);
         
-        emit RewardClaimed(msg.sender, reward);
-        
         // transfer the reward tokens
         require(IFY.transfer(msg.sender, reward), "reward transfer failed");
+        
+        emit RewardClaimed(msg.sender, reward);
     }
     
     // ------------------------------------------------------------------------
@@ -345,10 +345,10 @@ contract IFY_Stake is Owned {
         
         stakers[msg.sender].stakedAmount = 0;
         
-        emit UnStaked(msg.sender, stakedAmount);
-        
         // transfer staked tokens
-        require(IFY.transfer(msg.sender, stakedAmount));
+        IFY.transfer(msg.sender, stakedAmount);
+        
+        emit UnStaked(msg.sender, stakedAmount);
     }
     
     // ------------------------------------------------------------------------

@@ -1,6 +1,5 @@
-pragma solidity ^0.6.0;
-
 // SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.0;
 
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
@@ -158,6 +157,7 @@ library SafeMath {
     }
 
     function ceil(uint256 a, uint256 m) internal pure returns (uint256 r) {
+        require(m != 0, "SafeMath: to ceil number shall not be zero");
         return (a + m - 1) / m * m;
     }
 }
@@ -179,8 +179,7 @@ contract Owned {
         _;
     }
 
-    function transferOwnership(address payable _newOwner) external onlyOwner {
-        require(_newOwner != address(0),"Invalid address passed");
+    function transferOwnership(address payable _newOwner) public onlyOwner {
         owner = _newOwner;
         emit OwnershipTransferred(msg.sender, _newOwner);
     }
@@ -202,14 +201,17 @@ contract PreSale is Owned {
     using SafeMath for uint256;
     
     address public tokenAddress;
-    uint256 public constant startSale = 1612724400; // 7 Feb 2021, 7pm GMT
-    uint256 public constant endSale = 1613502000; // 16 Feb 2021, 7pm GMT
-    uint256 public constant claimDate = 1613505600; // 16 Feb 2021, 8pm GMT
+    // uint256 public startSale = 1612378800; // 3 Feb 2021, 7pm GMT
+    // uint256 endSale = 1612983600; // 10 Feb 2021, 7pm GMT
+    // uint256 claimDate = 1612987200; // 10 Feb 2021, 8pm GMT
+    uint256 public startSale = now; // 3 Feb 2021, 7pm GMT
+    uint256 public endSale = startSale + 8 days; // 10 Feb 2021, 7pm GMT
+    uint256 public claimDate = startSale + 9 days; // 10 Feb 2021, 8pm GMT
     uint256 public purchasedTokens;
     
     mapping(address => uint256) public investor;
 
-    function SetTokenAddress(address _tokenAddress) external onlyOwner {
+    constructor(address _tokenAddress) public {
         tokenAddress = _tokenAddress;
     }
     
@@ -217,10 +219,15 @@ contract PreSale is Owned {
         Invest();
     }
     
+    function getTime() public view returns(uint256){
+        return now;
+        
+    }
+    
     function Invest() public payable{
         require( now > startSale && now < endSale , "Sale is closed");
         uint256 tokens = getTokenAmount(msg.value);
-        investor[msg.sender] += tokens;
+        investor[msg.sender] = tokens;
         purchasedTokens = purchasedTokens + tokens;
         owner.transfer(msg.value);
     }
@@ -249,7 +256,9 @@ contract PreSale is Owned {
         require(block.timestamp > endSale, "sale is not closed");
         // check unsold tokens
         uint256 tokensInContract = IERC20(tokenAddress).balanceOf(address(this));
-        require(tokensInContract > 0, "no unsold tokens in contract");
-        require(IERC20(tokenAddress).transfer(owner, tokensInContract), "transfer of token failed");
+        require(tokensInContract > purchasedTokens, "no unsold tokens in contract");
+        uint256 unSoldTokens = tokensInContract.sub(purchasedTokens);
+        require(IERC20(tokenAddress).transfer(owner, unSoldTokens), "transfer of token failed");
     }
+
 }

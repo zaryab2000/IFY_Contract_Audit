@@ -8,36 +8,117 @@ pragma solidity ^0.6.0;
 */
 
 library SafeMath {
-  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-    if (a == 0) {
-      return 0;
+    /**
+     * @dev Returns the addition of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `+` operator.
+     *
+     * Requirements:
+     * - Addition cannot overflow.
+     */
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        require(c >= a, "SafeMath: addition overflow");
+
+        return c;
     }
-    uint256 c = a * b;
-    assert(c / a == b);
-    return c;
-  }
 
-  function div(uint256 a, uint256 b) internal pure returns (uint256) {
-    // assert(b > 0); // Solidity automatically throws when dividing by 0
-    uint256 c = a / b;
-    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-    return c;
-  }
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     * - Subtraction cannot overflow.
+     */
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        return sub(a, b, "SafeMath: subtraction overflow in Token");
+    }
 
-  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-    assert(b <= a);
-    return a - b;
-  }
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     * - Subtraction cannot overflow.
+     *
+     * _Available since v2.4.0._
+     */
+    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b <= a, errorMessage);
+        uint256 c = a - b;
 
-  function add(uint256 a, uint256 b) internal pure returns (uint256) {
-    uint256 c = a + b;
-    assert(c >= a);
-    return c;
-  }
+        return c;
+    }
 
-  function ceil(uint a, uint m) internal pure returns (uint r) {
-    return (a + m - 1) / m * m; 
+    /**
+     * @dev Returns the multiplication of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `*` operator.
+     *
+     * Requirements:
+     * - Multiplication cannot overflow.
+     */
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+        // benefit is lost if 'b' is also tested.
+        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+        if (a == 0) {
+            return 0;
+        }
+
+        uint256 c = a * b;
+        require(c / a == b, "SafeMath: multiplication overflow");
+
+        return c;
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers. Reverts on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     * - The divisor cannot be zero.
+     */
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        return div(a, b, "SafeMath: division by zero");
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers. Reverts with custom message on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     * - The divisor cannot be zero.
+     *
+     * _Available since v2.4.0._
+     */
+    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        // Solidity only automatically asserts when dividing by 0
+        require(b > 0, errorMessage);
+        uint256 c = a / b;
+        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+
+        return c;
+    }
+     function ceil(uint a, uint m) internal pure returns (uint r) {
+    return (a + m - 1) / m * m;
   }
+    
+    
 }
 
 // ----------------------------------------------------------------------------
@@ -53,12 +134,11 @@ contract Owned {
     }
 
     modifier onlyOwner {
-        require(msg.sender == owner, "Only allowed by owner");
+        require(msg.sender == owner);
         _;
     }
 
-    function transferOwnership(address payable _newOwner) external onlyOwner {
-        require(_newOwner != address(0),"Invalid address passed");
+    function transferOwnership(address payable _newOwner) public onlyOwner {
         owner = _newOwner;
         emit OwnershipTransferred(msg.sender, _newOwner);
     }
@@ -98,32 +178,27 @@ abstract contract ERC20Interface {
 contract Token is ERC20Interface, Owned {
     using SafeMath for uint256;
 
-    string public constant symbol = "IFY";
-    string public  constant name = "Infinity Yeild";
-    uint256 public constant decimals = 18;
-    uint256 private _totalSupply = 250000 * 10 ** (decimals);
+    string public symbol = "IFY";
+    string public  name = "Infinity Yeild";
+    uint256 public decimals = 18;
+    uint256 _totalSupply = 250000 * 10 ** (decimals);
     uint256 public tax = 5;
     address public STAKING_ADDRESS;
-    address public PRESALE_ADDRESS;
-    mapping(address => uint256) private balances;
-    mapping(address => mapping(address => uint256)) private allowed;
-    
-    event TaxChanged(uint256 newTax, address changedBy);
+    mapping(address => uint256) balances;
+    mapping(address => mapping(address => uint256)) allowed;
+
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
-    constructor(address _stakingAddress, address preSaleAddress) public {
-        //owner = 0x8D74DaBe71b1b95b4e4c90E5A97850FEB9C20855;
+    constructor(address _stakingAddress) public {
+      //  owner = 0x8D74DaBe71b1b95b4e4c90E5A97850FEB9C20855;
         STAKING_ADDRESS = _stakingAddress;
-        PRESALE_ADDRESS = preSaleAddress;
         balances[owner] = totalSupply();
         emit Transfer(address(0), owner, totalSupply());
-
     }
     
     function ChangeTax(uint256 _newTax) external onlyOwner{
-        tax = _newTax;
-        emit TaxChanged(_newTax, msg.sender);
+        tax = _newTax;    
     }
 
     /** ERC20Interface function's implementation **/
@@ -145,13 +220,15 @@ contract Token is ERC20Interface, Owned {
     // - 0 value transfers are allowed
     // ------------------------------------------------------------------------
     function transfer(address to, uint256 tokens) public override returns (bool success) {
-        require(address(to) != address(0) , "Invalid address");
-        require(balances[msg.sender] >= tokens, "insufficient sender's balance");
+        require(address(to) != address(0));
+        require(balances[msg.sender] >= tokens);
+        require(balances[to] + tokens >= balances[to]);
 
         balances[msg.sender] = balances[msg.sender].sub(tokens);
         uint256 deduction = 0;
-        // if the sender and receiver address is not staking address, apply tax 
-        if (to != STAKING_ADDRESS && msg.sender != STAKING_ADDRESS && to!= PRESALE_ADDRESS && msg.sender != PRESALE_ADDRESS){
+        // if the sender or receiver address is not staking address, apply tax 
+    
+        if (to != STAKING_ADDRESS || msg.sender != STAKING_ADDRESS ){
             deduction = onePercent(tokens).mul(tax); // Calculates the tax to be applied on the amount transferred
             uint256 _OS = onePercent(deduction).mul(10); // 10% will go to owner
             balances[owner] = balances[owner].add(_OS); 
@@ -182,22 +259,23 @@ contract Token is ERC20Interface, Owned {
     // - 0 value transfers are allowed
     // ------------------------------------------------------------------------
     function transferFrom(address from, address to, uint256 tokens) public override returns (bool success){
-        require(tokens <= allowed[from][msg.sender], "insufficient allowance"); //check allowance
-        require(balances[from] >= tokens, "Insufficient senders balance");
+        require(tokens <= allowed[from][msg.sender],"Exceed Alloance"); //check allowance
+        require(balances[from] >= tokens,"Not enough tokens");
         balances[from] = balances[from].sub(tokens);
         allowed[from][msg.sender] = allowed[from][msg.sender].sub(tokens);
 
         uint256 deduction = 0;
-        // if the sender and receiver address is not staking address, apply tax 
-        if (to != STAKING_ADDRESS && from != STAKING_ADDRESS && to!= PRESALE_ADDRESS && from != PRESALE_ADDRESS){
-            deduction = onePercent(tokens).mul(tax); // Calculates the tax to be applied on the amount transferred
-            uint256 _OS = onePercent(deduction).mul(10); // 10% will go to owner
-            balances[owner] = balances[owner].add(_OS); 
-            balances[STAKING_ADDRESS] = balances[STAKING_ADDRESS].add(deduction.sub(_OS)); // add the tax deducted to the staking pool for rewards
-        }
-        
-        balances[to] = balances[to].add(tokens.sub(deduction)); // send rest of the amount to the receiver after deduction
-        emit Transfer(from, to, tokens.sub(tokens));
+    if (to == STAKING_ADDRESS || msg.sender == STAKING_ADDRESS ){
+        balances[to] = balances[to].add(tokens.sub(deduction));
+        emit Transfer(msg.sender, to, tokens.sub(deduction));
+      }else{ 
+        deduction = onePercent(tokens).mul(tax); // Calculates the tax to be applied on the amount transferred
+        uint256 _OS = onePercent(deduction).mul(10); // 10% will go to owner
+        balances[owner] = balances[owner].add(_OS); 
+        balances[STAKING_ADDRESS] = balances[STAKING_ADDRESS].add(deduction.sub(_OS)); // add the tax deducted to the staking pool for rewards
+        balances[to] = balances[to].add(tokens.sub(deduction));
+        emit Transfer(msg.sender, to, tokens.sub(deduction));
+     }
         return true;
     }
     
@@ -209,8 +287,7 @@ contract Token is ERC20Interface, Owned {
         return allowed[tokenOwner][spender];
     }
     
-    /**UTILITY***/
-    
+    /**UTILITY**/
     // ------------------------------------------------------------------------
     // Calculates onePercent of the uint256 amount sent
     // ------------------------------------------------------------------------

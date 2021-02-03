@@ -212,29 +212,6 @@ contract("IFY Staking Contract Test", accounts => {
     await time.increase(time.duration.seconds(15638400));
   });
 
-   it("ClaimReward function should work as expected for User2", async () => {
-      const ownerBalanceBefore = await tokenInstance.balanceOf(accounts[0]);
-      const balanceBefore = await tokenInstance.balanceOf(accounts[2]);
-
-      await stakeInstance.ClaimReward({from:accounts[2]});
-      const balanceAfter = await tokenInstance.balanceOf(accounts[2]);
-      const StakeContractBalance = await tokenInstance.balanceOf(stakeInstance.address);
-      
-      const ownerBalanceAfter = await tokenInstance.balanceOf(accounts[0]);
-
-      const totalClaimed = await stakeInstance.totalClaimedRewards();
-      const staker = await stakeInstance.stakers(accounts[2]);
-
-      assert.equal(ownerBalanceBefore.toString(),ownerBalanceAfter.toString(),"Owner has received some unnecessary tax")
-      assert.equal(StakeContractBalance.toString(),"49750000000000000000000","Stake contract Balance before is wrong")
-      assert.equal(balanceBefore.toString(),"37500000000000000000000","Balance before is wrong")
-      assert.equal(balanceAfter.toString(),"62000000000000000000000","Balance after is wrong")
-      assert.equal(totalClaimed.toString(),"27000000000000000000000","Total claimed rewards not correct");
-      assert.equal(staker[1].toString(),"24500000000000000000000","User claimed rewards not correct");
- 
-  });
-
-
   it("Unstake function should work for USER2", async ()=>{
     const ownerBalanceBefore = await tokenInstance.balanceOf(accounts[0]);
     const balanceBefore = await tokenInstance.balanceOf(accounts[1]);
@@ -253,16 +230,41 @@ contract("IFY Staking Contract Test", accounts => {
     const totalStaked = await stakeInstance.totalStaked()
     const staker = await stakeInstance.stakers(accounts[2]);
  
-    assert.equal(rewardClaimed[1].toString(),"24500000000000000000000","reward claim is not zero");
+    assert.equal(rewardClaimed[1].toString(),"0","reward claim is not zero");
    // assert.equal(rewardAfter.toString(),"0","Reward is not assigned correctly")
-    assert.equal(rewardBefore.toString(),"0","RewardBefre is correct")
-    assert.equal(staker[2].toString(),"0","Pending reward is incorrect")
+    assert.equal(rewardBefore.toString(),"24500000000000000000000","RewardBefore is correct")
+    assert.equal(staker[2].toString(),"24500000000000000000000","Pending reward is incorrect")
     assert.equal(ownerBalanceBefore.toString(),ownerBalanceAfter.toString(),"Owner has received some unnecessary tax")
-    assert.equal(StakeContractBalance.toString(),"39750000000000000000000","Stake contract Balance before is wrong")
+    assert.equal(StakeContractBalance.toString(),"64250000000000000000000","Stake contract Balance before is wrong")
     assert.equal(totalStaked.toString(),"10000000000000000000000","Total Stake is not right");
     assert.equal(staker[0].toString(),"0","User balance not updated to ZERO");
 
   })
+
+   it("ClaimReward function should work as expected for User2", async () => {
+      const ownerBalanceBefore = await tokenInstance.balanceOf(accounts[0]);
+      const balanceBefore = await tokenInstance.balanceOf(accounts[2]);
+
+      await stakeInstance.ClaimReward({from:accounts[2]});
+      const balanceAfter = await tokenInstance.balanceOf(accounts[2]);
+      const StakeContractBalance = await tokenInstance.balanceOf(stakeInstance.address);
+      
+      const ownerBalanceAfter = await tokenInstance.balanceOf(accounts[0]);
+
+      const totalClaimed = await stakeInstance.totalClaimedRewards();
+      const staker = await stakeInstance.stakers(accounts[2]);
+
+      assert.equal(ownerBalanceBefore.toString(),ownerBalanceAfter.toString(),"Owner has received some unnecessary tax")
+      assert.equal(StakeContractBalance.toString(),"39750000000000000000000","Stake contract Balance before is wrong")
+      assert.equal(balanceBefore.toString(),"47500000000000000000000","Balance before is wrong")
+      assert.equal(balanceAfter.toString(),"72000000000000000000000","Balance after is wrong")
+      assert.equal(totalClaimed.toString(),"27000000000000000000000","Total claimed rewards not correct");
+      assert.equal(staker[1].toString(),"24500000000000000000000","User claimed rewards not correct");
+ 
+  });
+
+
+  
 
 
   it("User should not be able to call UnstakeFunction function Twice", async () => {
